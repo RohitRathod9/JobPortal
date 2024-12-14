@@ -8,7 +8,7 @@ import axios from 'axios';
 
 // Create axios instance with base URL and export it
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: 'https://job-portal-backend-bxqq.onrender.com/api/v1',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',

@@ -7,7 +7,7 @@ export const getUser = createAsyncThunk(
   "user/getUser",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get('/api/v1/user/getuser');
+      const response = await api.get('/user/getuser');
       if (response.data.success === false) {
         return rejectWithValue(response.data.message);
       }
@@ -28,7 +28,7 @@ export const login = createAsyncThunk(
   "user/login",
   async (data, { rejectWithValue }) => {
     try {
-      const response = await api.post('/api/v1/user/login', data);
+      const response = await api.post('/user/login', data);
       
       if (response.data.success === false) {
         return rejectWithValue(response.data.message);
