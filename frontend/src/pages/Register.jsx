@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { clearAllUserErrors, register } from "../store/slices/userSlice";
+import { clearAllUserErrors, registerUser } from "../store/slices/userSlice";
 import { toast } from "react-toastify";
 import { FaAddressBook, FaPencilAlt, FaRegUser } from "react-icons/fa";
 import { FaPhoneFlip } from "react-icons/fa6";
@@ -58,23 +58,29 @@ const Register = () => {
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
 
-  const handleRegsiter = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append("role", role);
-    formData.append("name", name);
-    formData.append("email", email);
-    formData.append("phone", phone);
-    formData.append("address", address);
-    formData.append("password", password);
-    if (role === "Job Seeker") {
-      formData.append("firstNiche", firstNiche);
-      formData.append("secondNiche", secondNiche);
-      formData.append("thirdNiche", thirdNiche);
-      formData.append("coverLetter", coverLetter);
-      formData.append("resume", resume);
+    try {
+      const formData = new FormData();
+      formData.append("role", role);
+      formData.append("name", name);
+      formData.append("email", email);
+      formData.append("phone", phone);
+      formData.append("address", address);
+      formData.append("password", password);
+      if (role === "Job Seeker") {
+        formData.append("firstNiche", firstNiche);
+        formData.append("secondNiche", secondNiche);
+        formData.append("thirdNiche", thirdNiche);
+        formData.append("coverLetter", coverLetter);
+        formData.append("resume", resume);
+      }
+      await dispatch(registerUser(formData)).unwrap();
+      navigateTo('/login');
+    } catch (err) {
+      console.error('Registration failed:', err);
+      toast.error(err || 'Registration failed');
     }
-    dispatch(register(formData));
   };
 
   useEffect(() => {
@@ -94,7 +100,7 @@ const Register = () => {
           <div className="header">
             <h3>Create a new account</h3>
           </div>
-          <form onSubmit={handleRegsiter}>
+          <form onSubmit={handleRegister}>
             <div className="wrapper">
               <div className="inputTag">
                 {/* <label>Register As</label> */}

@@ -75,24 +75,46 @@ export const register = catchAsyncErrors(async (req, res, next) => {
 });
 
 export const login = catchAsyncErrors(async (req, res, next) => {
-  const { role, email, password } = req.body;
-  if (!role || !email || !password) {
-    return next(
-      new ErrorHandler("Email, password and role are required.", 400)
-    );
+  try {
+    const { role, email, password } = req.body;
+    
+    console.log('Login attempt:', { role, email, password: '***' });
+    
+    if (!role || !email || !password) {
+      return next(new ErrorHandler("Email, password and role are required.", 400));
+    }
+
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) {
+      return next(new ErrorHandler("Invalid email or password.", 400));
+    }
+
+    const isPasswordMatched = await user.comparePassword(password);
+    if (!isPasswordMatched) {
+      return next(new ErrorHandler("Invalid email or password.", 400));
+    }
+
+    if (user.role !== role) {
+      return next(new ErrorHandler("Invalid user role.", 400));
+    }
+
+    const token = user.getJWTToken();
+    
+    res.cookie('token', token, {
+      expires: new Date(Date.now() + process.env.COOKIE_EXPIRE * 24 * 60 * 60 * 1000),
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax'
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Logged in successfully",
+      user
+    });
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 400));
   }
-  const user = await User.findOne({ email }).select("+password");
-  if (!user) {
-    return next(new ErrorHandler("Invalid email or password.", 400));
-  }
-  const isPasswordMatched = await user.comparePassword(password);
-  if (!isPasswordMatched) {
-    return next(new ErrorHandler("Invalid email or password.", 400));
-  }
-  if (user.role !== role) {
-    return next(new ErrorHandler("Invalid user role.", 400));
-  }
-  sendToken(user, 200, res, "User logged in successfully.");
 });
 
 export const logout = catchAsyncErrors(async (req, res, next) => {
@@ -186,4 +208,27 @@ export const updatePassword = catchAsyncErrors(async (req, res, next) => {
   user.password = req.body.newPassword;
   await user.save();
   sendToken(user, 200, res, "Password updated successfully.");
+});
+
+export const loginUser = catchAsyncErrors(async (req, res, next) => {
+  try {
+    // ... authentication logic ...
+    
+    const token = user.getJWTToken();
+    
+    res.cookie('token', token, {
+      expires: new Date(Date.now() + process.env.COOKIE_EXPIRE * 24 * 60 * 60 * 1000),
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax'
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Logged in successfully",
+      user
+    });
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 400));
+  }
 });

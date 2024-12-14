@@ -1,14 +1,91 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-self-assign */
-import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { api } from '../../main';
+
+export const getUser = createAsyncThunk(
+  "user/getUser",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get('/user/getuser');
+      if (response.data.success === false) {
+        return rejectWithValue(response.data.message);
+      }
+      return response.data;
+    } catch (error) {
+      if (!error.response) {
+        return rejectWithValue('Network error - Cannot connect to server');
+      }
+      if (error.response.status === 401) {
+        return rejectWithValue(error.response.data.message);
+      }
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch user');
+    }
+  }
+);
+
+export const login = createAsyncThunk(
+  "user/login",
+  async (data, { rejectWithValue }) => {
+    try {
+      const response = await api.post('/user/login', data, {
+        headers: { 
+          "Content-Type": "application/json"
+        }
+      });
+      
+      if (response.data.success === false) {
+        return rejectWithValue(response.data.message);
+      }
+      
+      return response.data;
+    } catch (error) {
+      if (!error.response) {
+        return rejectWithValue('Network error - Cannot connect to server');
+      }
+      return rejectWithValue(error.response?.data?.message || 'Login failed');
+    }
+  }
+);
+
+export const registerUser = createAsyncThunk(
+  "user/register",
+  async (data, { rejectWithValue }) => {
+    try {
+      const response = await api.post('/user/register', data, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      return response.data;
+    } catch (error) {
+      if (!error.response) {
+        return rejectWithValue('Network error - Cannot connect to server');
+      }
+      return rejectWithValue(error.response?.data?.message || 'Registration failed');
+    }
+  }
+);
+
+export const logoutUser = createAsyncThunk(
+  "user/logout",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get('/user/logout');
+      return response.data;
+    } catch (error) {
+      if (!error.response) {
+        return rejectWithValue('Network error - Cannot connect to server');
+      }
+      return rejectWithValue(error.response?.data?.message || 'Logout failed');
+    }
+  }
+);
 
 const userSlice = createSlice({
   name: "user",
   initialState: {
     loading: false,
     isAuthenticated: false,
-    user: {},
+    user: null,
     error: null,
     message: null,
   },
@@ -87,74 +164,83 @@ const userSlice = createSlice({
       state.error = null;
       state.user = state.user;
     },
+    clearErrors: (state) => {
+      state.error = null;
+    },
+    resetAuth: (state) => {
+      state.isAuthenticated = false;
+      state.user = null;
+      state.error = null;
+      state.message = null;
+    }
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(getUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload.user;
+        state.error = null;
+      })
+      .addCase(getUser.rejected, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = false;
+        state.user = null;
+        if (!action.payload?.includes('Please login first')) {
+          state.error = action.payload;
+        }
+      })
+      .addCase(login.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload.user;
+        state.message = action.payload.message;
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = false;
+        state.user = null;
+        state.error = action.payload;
+      })
+      .addCase(registerUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload.user;
+        state.message = action.payload.message;
+      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = false;
+        state.user = null;
+        state.error = action.payload;
+      })
+      .addCase(logoutUser.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.loading = false;
+        state.isAuthenticated = false;
+        state.user = null;
+        state.error = null;
+      })
+      .addCase(logoutUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
-
-export const register = (data) => async (dispatch) => {
-  dispatch(userSlice.actions.registerRequest());
-  try {
-    const response = await axios.post(
-      "http://localhost:4000/api/v1/user/register",
-      data,
-      {
-        withCredentials: true,
-        headers: { "Content-Type": "multipart/form-data" },
-      }
-    );
-    dispatch(userSlice.actions.registerSuccess(response.data));
-    dispatch(userSlice.actions.clearAllErrors());
-  } catch (error) {
-    dispatch(userSlice.actions.registerFailed(error.response.data.message));
-  }
-};
-
-export const login = (data) => async (dispatch) => {
-  dispatch(userSlice.actions.loginRequest());
-  try {
-    const response = await axios.post(
-      "http://localhost:4000/api/v1/user/login",
-      data,
-      {
-        withCredentials: true,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-    dispatch(userSlice.actions.loginSuccess(response.data));
-    dispatch(userSlice.actions.clearAllErrors());
-  } catch (error) {
-    dispatch(userSlice.actions.loginFailed(error.response.data.message));
-  }
-};
-
-export const getUser = () => async (dispatch) => {
-  dispatch(userSlice.actions.fetchUserRequest());
-  try {
-    const response = await axios.get(
-      "http://localhost:4000/api/v1/user/getuser",
-      {
-        withCredentials: true,
-      }
-    );
-    dispatch(userSlice.actions.fetchUserSuccess(response.data.user));
-    dispatch(userSlice.actions.clearAllErrors());
-  } catch (error) {
-    dispatch(userSlice.actions.fetchUserFailed(error.response.data.message));
-  }
-};
-export const logout = () => async (dispatch) => {
-  try {
-    const response = await axios.get(
-      "http://localhost:4000/api/v1/user/logout",
-      {
-        withCredentials: true,
-      }
-    );
-    dispatch(userSlice.actions.logoutSuccess());
-    dispatch(userSlice.actions.clearAllErrors());
-  } catch (error) {
-    dispatch(userSlice.actions.logoutFailed(error.response.data.message));
-  }
-};
 
 export const clearAllUserErrors = () => (dispatch) => {
   dispatch(userSlice.actions.clearAllErrors());

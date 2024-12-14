@@ -21,13 +21,26 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append("role", role);
-    formData.append("email", email);
-    formData.append("password", password);
-    dispatch(login(formData));
+    
+    // Validate fields before submitting
+    if (!role || !email || !password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    try {
+      await dispatch(login({ 
+        role,
+        email, 
+        password 
+      })).unwrap();
+      navigateTo('/');
+    } catch (err) {
+      console.error('Login failed:', err);
+      toast.error(err || 'Login failed');
+    }
   };
 
   useEffect(() => {
@@ -49,9 +62,12 @@ const Login = () => {
           </div>
           <form onSubmit={handleLogin}>
             <div className="inputTag">
-              {/* <label>Login As</label> */}
               <div>
-                <select value={role} onChange={(e) => setRole(e.target.value)}>
+                <select 
+                  value={role} 
+                  onChange={(e) => setRole(e.target.value)}
+                  required
+                >
                   <option value="">Select Role</option>
                   <option value="Employer">Login as an Employer</option>
                   <option value="Job Seeker">Login as a Job Seeker</option>
@@ -60,33 +76,31 @@ const Login = () => {
               </div>
             </div>
             <div className="inputTag">
-              {/* <label>Email</label> */}
               <div>
                 <input
                   type="email"
                   placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
                 <MdOutlineMailOutline />
               </div>
             </div>
             <div className="inputTag">
-              {/* <label>Password</label> */}
               <div>
                 <input
                   type="password"
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  required
                 />
                 <RiLock2Fill />
               </div>
             </div>
-            <button type="submit" disabled={loading}>
-              Login
-            </button>
-            <Link to={"/register"}>Register Now</Link>
+            <button type="submit">Login</button>
+            <Link to="/register">Register Now</Link>
           </form>
         </div>
       </section>

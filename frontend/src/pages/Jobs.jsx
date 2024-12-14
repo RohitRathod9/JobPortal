@@ -16,6 +16,7 @@ const Jobs = () => {
   const [searchKeyword, setSearchKeyword] = useState("");
 
   const { jobs, loading, error } = useSelector((state) => state.jobs);
+  const { isAuthenticated } = useSelector((state) => state.user);
 
   const handleCityChange = (city) => {
     setCity(city);
@@ -29,15 +30,33 @@ const Jobs = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (error) {
-      toast.error(error);
-      dispatch(clearAllJobErrors());
-    }
-    dispatch(fetchJobs(city, niche, searchKeyword));
-  }, [dispatch, error, city, niche]);
+    const loadJobs = async () => {
+      try {
+        if (error) {
+          toast.error(error);
+          dispatch(clearAllJobErrors());
+        }
+        await dispatch(fetchJobs({ city, niche, searchKeyword })).unwrap();
+      } catch (err) {
+        console.error('Error fetching jobs:', err);
+        if (!error) {
+          toast.error('Failed to connect to server. Please try again later.');
+        }
+      }
+    };
 
-  const handleSearch = () => {
-    dispatch(fetchJobs(city, niche, searchKeyword));
+    if (isAuthenticated) {
+      loadJobs();
+    }
+  }, [dispatch, error, city, niche, searchKeyword, isAuthenticated]);
+
+  const handleSearch = async () => {
+    try {
+      await dispatch(fetchJobs({ city, niche, keyword: searchKeyword })).unwrap();
+    } catch (err) {
+      console.error('Error searching jobs:', err);
+      toast.error('Failed to search jobs. Please try again.');
+    }
   };
 
   const cities = [

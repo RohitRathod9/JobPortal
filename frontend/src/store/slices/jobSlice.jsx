@@ -1,7 +1,30 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-self-assign */
-import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { api } from '../../main';
+
+export const fetchJobs = createAsyncThunk(
+  "jobs/fetchAll",
+  async ({ city = '', niche = '', keyword = '' } = {}, { rejectWithValue }) => {
+    try {
+      const params = new URLSearchParams();
+      if (city) params.append('city', city);
+      if (niche) params.append('niche', niche);
+      if (keyword) params.append('keyword', keyword);
+      
+      const queryString = params.toString();
+      const url = `/job/getall${queryString ? `?${queryString}` : ''}`;
+      
+      const response = await api.get(url);
+      return response.data;
+    } catch (error) {
+      if (!error.response) {
+        return rejectWithValue('Network error - Cannot connect to server');
+      }
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch jobs');
+    }
+  }
+);
 
 const jobSlice = createSlice({
   name: "jobs",
@@ -103,88 +126,66 @@ const jobSlice = createSlice({
       state.singleJob = {};
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchJobs.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchJobs.fulfilled, (state, action) => {
+        state.loading = false;
+        state.jobs = action.payload.jobs || [];
+      })
+      .addCase(fetchJobs.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
+  },
 });
-
-export const fetchJobs =
-  (city, niche, searchKeyword = "") =>
-  async (dispatch) => {
-    try {
-      dispatch(jobSlice.actions.requestForAllJobs());
-      let link = "http://localhost:4000/api/v1/job/getall?"; 
-      let queryParams = [];
-      if (searchKeyword) {
-        queryParams.push(`searchKeyword=${searchKeyword}`);
-      }
-      if (city) {
-        queryParams.push(`city=${city}`);
-      }
-      if (niche) {
-        queryParams.push(`niche=${niche}`);
-      }
-
-      link += queryParams.join("&");
-      const response = await axios.get(link, { withCredentials: true });
-      dispatch(jobSlice.actions.successForAllJobs(response.data.jobs));
-      dispatch(jobSlice.actions.clearAllErrors());
-    } catch (error) {
-      dispatch(jobSlice.actions.failureForAllJobs(error.response.data.message));
-    }
-  };
 
 export const fetchSingleJob = (jobId) => async (dispatch) => {
   dispatch(jobSlice.actions.requestForSingleJob());
   try {
-    const response = await axios.get(
-      `http://localhost:4000/api/v1/job/get/${jobId}`,
-      { withCredentials: true }
-    );
+    const response = await api.get(`/job/get/${jobId}`);
     dispatch(jobSlice.actions.successForSingleJob(response.data.job));
     dispatch(jobSlice.actions.clearAllErrors());
   } catch (error) {
-    dispatch(jobSlice.actions.failureForSingleJob(error.response.data.message));
+    dispatch(jobSlice.actions.failureForSingleJob(error.response?.data?.message || 'Failed to fetch job'));
   }
 };
 
 export const postJob = (data) => async (dispatch) => {
   dispatch(jobSlice.actions.requestForPostJob());
   try {
-    const response = await axios.post(
-      `http://localhost:4000/api/v1/job/post`,
-      data,
-      { withCredentials: true, headers: { "Content-Type": "application/json" } }
-    );
+    const response = await api.post('/job/post', data, {
+      headers: { "Content-Type": "application/json" }
+    });
     dispatch(jobSlice.actions.successForPostJob(response.data.message));
     dispatch(jobSlice.actions.clearAllErrors());
   } catch (error) {
-    dispatch(jobSlice.actions.failureForPostJob(error.response.data.message));
+    dispatch(jobSlice.actions.failureForPostJob(error.response?.data?.message || 'Failed to post job'));
   }
 };
 
 export const getMyJobs = () => async (dispatch) => {
   dispatch(jobSlice.actions.requestForMyJobs());
   try {
-    const response = await axios.get(
-      `http://localhost:4000/api/v1/job/getmyjobs`,
-      { withCredentials: true }
-    );
+    const response = await api.get('/job/getmyjobs');
     dispatch(jobSlice.actions.successForMyJobs(response.data.myJobs));
     dispatch(jobSlice.actions.clearAllErrors());
   } catch (error) {
-    dispatch(jobSlice.actions.failureForMyJobs(error.response.data.message));
+    dispatch(jobSlice.actions.failureForMyJobs(error.response?.data?.message || 'Failed to fetch my jobs'));
   }
 };
 
 export const deleteJob = (id) => async (dispatch) => {
   dispatch(jobSlice.actions.requestForDeleteJob());
   try {
-    const response = await axios.delete(
-      `http://localhost:4000/api/v1/job/delete/${id}`,
-      { withCredentials: true }
-    );
+    const response = await api.delete(`/job/delete/${id}`);
     dispatch(jobSlice.actions.successForDeleteJob(response.data.message));
     dispatch(clearAllJobErrors());
   } catch (error) {
-    dispatch(jobSlice.actions.failureForDeleteJob(error.response.data.message));
+    dispatch(jobSlice.actions.failureForDeleteJob(error.response?.data?.message || 'Failed to delete job'));
   }
 };
 
