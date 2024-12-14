@@ -13,7 +13,7 @@ export const fetchJobs = createAsyncThunk(
       if (keyword) params.append('keyword', keyword);
       
       const queryString = params.toString();
-      const url = `/job/getall${queryString ? `?${queryString}` : ''}`;
+      const url = `/api/v1/job/getall${queryString ? `?${queryString}` : ''}`;
       
       const response = await api.get(url);
       return response.data;
