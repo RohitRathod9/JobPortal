@@ -14,6 +14,11 @@ import { newsLetterCron } from "./automation/newsLetterCron.js";
 const app = express();
 config({ path: "./config/config.env" });
 
+const allowedOrigins = [
+  "https://jobportalx-rg9o.onrender.com", // Your production frontend
+];
+
+
 app.use(
   cors({
     origin: [process.env.FRONTEND_URL],
