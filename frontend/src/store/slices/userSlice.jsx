@@ -65,7 +65,14 @@ export const logoutUser = createAsyncThunk(
   "user/logout",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get('/user/logout');
+      const response = await api.get('/user/logout', {
+        withCredentials: true,
+        headers: {
+          'Authorization': `Bearer ${document.cookie.split('token=')[1]?.split(';')[0]}`
+        }
+      });
+      
+      // Clear cookie after successful logout
       document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       return response.data;
     } catch (error) {

@@ -6,7 +6,6 @@ import {Provider} from "react-redux"
 import store from "./store/store.js"
 import axios from 'axios';
 
-// Create axios instance with base URL and export it
 const api = axios.create({
   baseURL: 'https://job-portal-backend-bxqq.onrender.com/api/v1',
   withCredentials: true,
@@ -16,11 +15,21 @@ const api = axios.create({
   }
 });
 
-// Add request interceptor to handle auth
+// Improved token extraction
+const getToken = () => {
+  const cookies = document.cookie.split(';');
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === 'token') {
+      return value;
+    }
+  }
+  return null;
+};
+
 api.interceptors.request.use(
   (config) => {
-    // Get token from cookie
-    const token = document.cookie.split('token=')[1]?.split(';')[0];
+    const token = getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -33,7 +42,6 @@ api.interceptors.request.use(
 
 export { api };
 
-// Create root only once
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <Provider store={store}>
