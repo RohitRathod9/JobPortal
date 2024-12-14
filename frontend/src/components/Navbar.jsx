@@ -15,9 +15,12 @@ const Navbar = () => {
     try {
       await dispatch(logoutUser()).unwrap();
       toast.success("Logged out successfully");
+      window.location.href = '/';
     } catch (err) {
       console.error('Logout failed:', err);
-      toast.error(err || 'Logout failed');
+      if (!err.includes('Please login first')) {
+        toast.error(err || 'Logout failed');
+      }
     }
   };
 

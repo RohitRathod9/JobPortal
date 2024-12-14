@@ -70,10 +70,15 @@ export const logoutUser = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get('/user/logout');
+      document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       return response.data;
     } catch (error) {
       if (!error.response) {
         return rejectWithValue('Network error - Cannot connect to server');
+      }
+      if (error.response.status === 401) {
+        document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        return rejectWithValue('Please login first');
       }
       return rejectWithValue(error.response?.data?.message || 'Logout failed');
     }
