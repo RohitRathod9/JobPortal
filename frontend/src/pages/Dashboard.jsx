@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { logout, clearAllUserErrors } from "../store/slices/userSlice";
+import { logoutUser, clearAllUserErrors } from "../store/slices/userSlice";
 import { LuMoveRight } from "react-icons/lu";
 import MyProfile from "../components/MyProfile";
 import UpdateProfile from "../components/UpdateProfile";
@@ -26,9 +26,14 @@ const Dashboard = () => {
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
 
-  const handleLogout = () => {
-    dispatch(logout());
-    toast.success("Logged out successfully.");
+  const handleLogout = async () => {
+    try {
+      await dispatch(logoutUser()).unwrap();
+      toast.success("Logged out successfully.");
+    } catch (err) {
+      console.error('Logout failed:', err);
+      toast.error(err || 'Logout failed');
+    }
   };
   useEffect(() => {
     if (error) {

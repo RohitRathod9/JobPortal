@@ -14,6 +14,7 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       await dispatch(logoutUser()).unwrap();
+      toast.success("Logged out successfully");
     } catch (err) {
       console.error('Logout failed:', err);
       toast.error(err || 'Logout failed');
