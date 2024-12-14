@@ -246,12 +246,4 @@ export const clearAllUserErrors = () => (dispatch) => {
   dispatch(userSlice.actions.clearAllErrors());
 };
 
-export {
-  getUser,
-  login,
-  registerUser,
-  logoutUser,
-  clearAllUserErrors
-};
-
 export default userSlice.reducer;
