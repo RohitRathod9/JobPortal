@@ -13,7 +13,7 @@ export const fetchJobs = createAsyncThunk(
       if (keyword) params.append('keyword', keyword);
       
       const queryString = params.toString();
-      const url = `/api/v1/job/getall${queryString ? `?${queryString}` : ''}`;
+      const url = `/job/getall${queryString ? `?${queryString}` : ''}`;
       
       const response = await api.get(url);
       return response.data;
@@ -157,9 +157,7 @@ export const fetchSingleJob = (jobId) => async (dispatch) => {
 export const postJob = (data) => async (dispatch) => {
   dispatch(jobSlice.actions.requestForPostJob());
   try {
-    const response = await api.post('/job/post', data, {
-      headers: { "Content-Type": "application/json" }
-    });
+    const response = await api.post('/job/post', data);
     dispatch(jobSlice.actions.successForPostJob(response.data.message));
     dispatch(jobSlice.actions.clearAllErrors());
   } catch (error) {
