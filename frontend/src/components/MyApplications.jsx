@@ -21,7 +21,7 @@ const MyApplications = () => {
 
   useEffect(() => {
     dispatch(fetchJobSeekerApplications());
-  }, [dispatch]);
+  }, []);
 
   useEffect(() => {
     if (error) {
@@ -50,7 +50,7 @@ const MyApplications = () => {
       ) : (
         <>
           <div className="account_components">
-            <h3>My Applications For Jobs</h3>
+            <h3>My Application For Jobs</h3>
             <div className="applications_container">
               {applications.map((element) => {
                 return (
@@ -59,10 +59,10 @@ const MyApplications = () => {
                       <span>Job Title: </span> {element.jobInfo.jobTitle}
                     </p>
                     <p className="sub-sec">
-                      <span>Name: </span> {element.jobSeekerInfo.name}
+                      <span>Name</span> {element.jobSeekerInfo.name}
                     </p>
                     <p className="sub-sec">
-                      <span>Email: </span> {element.jobSeekerInfo.email}
+                      <span>Email</span> {element.jobSeekerInfo.email}
                     </p>
                     <p className="sub-sec">
                       <span>Phone: </span> {element.jobSeekerInfo.phone}
@@ -71,7 +71,7 @@ const MyApplications = () => {
                       <span>Address: </span> {element.jobSeekerInfo.address}
                     </p>
                     <p className="sub-sec">
-                      <span>Cover Letter: </span>
+                      <span>Coverletter: </span>
                       <textarea
                         value={element.jobSeekerInfo.coverLetter}
                         rows={5}
