@@ -14,6 +14,7 @@ const Jobs = () => {
   const [niche, setNiche] = useState("");
   const [selectedNiche, setSelectedNiche] = useState("");
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [showApplyMessage, setShowApplyMessage] = useState(false);
 
   const { jobs, loading, error } = useSelector((state) => state.jobs);
   const { isAuthenticated } = useSelector((state) => state.user);
@@ -45,10 +46,8 @@ const Jobs = () => {
       }
     };
 
-    if (isAuthenticated) {
-      loadJobs();
-    }
-  }, [dispatch, error, city, niche, searchKeyword, isAuthenticated]);
+    loadJobs();
+  }, [dispatch, error, city, niche, searchKeyword]);
 
   const handleSearch = async () => {
     try {
@@ -56,6 +55,12 @@ const Jobs = () => {
     } catch (err) {
       console.error('Error searching jobs:', err);
       toast.error('Failed to search jobs. Please try again.');
+    }
+  };
+
+  const handleApplyNow = () => {
+    if (!isAuthenticated) {
+      setShowApplyMessage(true);
     }
   };
 
@@ -203,6 +208,7 @@ const Jobs = () => {
                           <Link
                             className="btn"
                             to={`/post/application/${element._id}`}
+                            onClick={handleApplyNow}
                           >
                             Apply Now
                           </Link>
@@ -210,6 +216,9 @@ const Jobs = () => {
                       </div>
                     );
                   })}
+                {showApplyMessage && (
+                  <p>Please log in to apply for jobs.</p>
+                )}
               </div>
             </div>
           </div>
