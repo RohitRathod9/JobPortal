@@ -6,8 +6,8 @@ import { toast } from "react-toastify";
 import {
   clearAllApplicationErrors,
   deleteApplication,
-  fetchEmployerApplications,
-  resetApplicationSlice,
+  // fetchEmployerApplications,
+  // resetApplicationSlice,
 } from "../store/slices/applicationSlice";
 import Spinner from "./Spinner";
 import { Link } from "react-router-dom";
@@ -24,12 +24,12 @@ const Applications = () => {
       toast.error(error);
       dispatch(clearAllApplicationErrors());
     }
-    if (message) {
-      toast.success(message);
-      dispatch(resetApplicationSlice());
-    }
-    dispatch(fetchEmployerApplications());
-  }, [dispatch, error, message]);
+    // if (message) {
+    //   toast.success(message);
+    //   dispatch(resetApplicationSlice());
+    // }
+    // dispatch(fetchEmployerApplications());
+  }, [dispatch, error, message])   ;
 
   const handleDeleteApplication = (id) => {
     dispatch(deleteApplication(id));
