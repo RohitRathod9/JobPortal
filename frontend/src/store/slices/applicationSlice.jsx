@@ -66,6 +66,6 @@ const applicationSlice = createSlice({
 });
 
 export const {   clearAllApplicationErrors
-,  resetApplicationSlice
+,  resetApplicationSlice, deleteApplication
  } = applicationSlice.actions;
 export default applicationSlice.reducer;
