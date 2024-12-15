@@ -65,7 +65,9 @@ const applicationSlice = createSlice({
   }
 });
 
-export const {   clearAllApplicationErrors
-,  resetApplicationSlice, deleteApplication
+export const {    clearAllApplicationErrors,
+  resetApplicationSlice,
+  deleteApplication,
+  fetchJobSeekerApplications
  } = applicationSlice.actions;
 export default applicationSlice.reducer;
